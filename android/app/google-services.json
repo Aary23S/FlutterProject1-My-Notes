@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "514083905488",
+    "project_id": "graphic-jet-324619",
+    "storage_bucket": "graphic-jet-324619.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514083905488:android:4165171aed843ee62ea3d5",
+        "android_client_info": {
+          "package_name": "com.example.learning_dart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbmZPdGQlkZJPxN-Ydfb3yMvBpvCMvaao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514083905488:android:0633c5acd68ebad82ea3d5",
+        "android_client_info": {
+          "package_name": "com.example.registration_form"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbmZPdGQlkZJPxN-Ydfb3yMvBpvCMvaao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
