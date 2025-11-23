@@ -9,7 +9,7 @@ class UnableToGetDocumentDirectory implements Exception {}
 class DatabaseIsNotOpen implements Exception {}
 class CouldNotDeleteUser implements Exception {}
 class UserAlreadyExsists implements Exception {}
-
+class UserDoesNotExists implements Exception {}
 class NotesServices 
 {
     Database? _db;
@@ -24,6 +24,7 @@ class NotesServices
           return db;
         }
     }
+    
 
     Future<void> deleteUser({required String email}) async
     {
@@ -38,24 +39,32 @@ class NotesServices
       }
       
     } 
+    Future<DatabaseUser> createUser({required String email}) async 
+    {
+        final db= _getDatabaseOrThrow();
+        final result = await db.query(userTable,where: 'email=?', whereArgs: [email.toLowerCase()]);
+        if(result.isNotEmpty){
+          throw UserAlreadyExsists();
+        }
+        final userId = await db.insert(userTable, {
+          'emailCol' :email.toLowerCase()
+        });
+        return DatabaseUser (
+          id:userId,
+          email : email,
+        );
+    }
 
-  Future<DatabaseUser> createUser({required String email}) async 
-  {
-      final db= _getDatabaseOrThrow();
-      final result = await db.query(userTable,where: 'email=?', whereArgs: [email.toLowerCase()]);
-      if(result.isNotEmpty){
-        throw UserAlreadyExsists();
+    Future<List<DatabaseUser>> fetchUser ({required String email}) async
+    {
+      final db = _getDatabaseOrThrow();
+      final result = await db.query(userTable, limit: 1, where: 'email=?', whereArgs: [email.toLowerCase()]);
+      if(result.isEmpty){
+        throw UserDoesNotExists();
       }
-
-      final userId = await db.insert(userTable, {
-        'emailCol' :email.toLowerCase()
-      });
-
-      return DatabaseUser (
-        id:userId,
-        email : email,
-      );
-  }
+      // List<Map<String, Object?>>
+      return result.map((row) => DatabaseUser.fromRow(row)).toList();
+    }
 
     Future<void> open() async
     {
@@ -109,7 +118,7 @@ class NotesServices
         }
       }
 
-    
+
 }
 
 
