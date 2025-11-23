@@ -7,10 +7,55 @@ import 'package:path/path.dart' show join;
 class DatabaseIsAlreadyOpen implements Exception {}
 class UnableToGetDocumentDirectory implements Exception {}
 class DatabaseIsNotOpen implements Exception {}
+class CouldNotDeleteUser implements Exception {}
+class UserAlreadyExsists implements Exception {}
 
 class NotesServices 
 {
     Database? _db;
+    
+    Database _getDatabaseOrThrow() 
+    {
+        final db=_db;
+        if(db==null){
+          throw DatabaseIsNotOpen();
+        }
+        else{
+          return db;
+        }
+    }
+
+    Future<void> deleteUser({required String email}) async
+    {
+      final db = _getDatabaseOrThrow();
+      final deleteCount = await db.delete(
+        'userTable',
+        where : 'email=?',
+        whereArgs: [email.toLowerCase()]
+      );
+      if(deleteCount!=1){
+        throw CouldNotDeleteUser();
+      }
+      
+    } 
+
+  Future<DatabaseUser> createUser({required String email}) async 
+  {
+      final db= _getDatabaseOrThrow();
+      final result = await db.query(userTable,where: 'email=?', whereArgs: [email.toLowerCase()]);
+      if(result.isNotEmpty){
+        throw UserAlreadyExsists();
+      }
+
+      final userId = await db.insert(userTable, {
+        'emailCol' :email.toLowerCase()
+      });
+
+      return DatabaseUser (
+        id:userId,
+        email : email,
+      );
+  }
 
     Future<void> open() async
     {
@@ -53,7 +98,8 @@ class NotesServices
         throw UnableToGetDocumentDirectory();
       }
       
-      Future<void> close() async{
+    }
+    Future<void> close() async{
         final db=_db;
         if(db==null){
           throw DatabaseIsNotOpen();
@@ -62,8 +108,11 @@ class NotesServices
           _db=null;
         }
       }
-    }
-} 
+
+    
+}
+
+
 
 class DatabaseUser 
 {
