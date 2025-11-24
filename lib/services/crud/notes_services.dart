@@ -10,6 +10,8 @@ class DatabaseIsNotOpen implements Exception {}
 class CouldNotDeleteUser implements Exception {}
 class UserAlreadyExsists implements Exception {}
 class UserDoesNotExists implements Exception {}
+class CanNotFindUser implements Exception {} 
+class CanNotdDeleteNote implements Exception {}
 class NotesServices 
 {
     Database? _db;
@@ -55,6 +57,21 @@ class NotesServices
         );
     }
 
+    Future<DatabaseUser> getUser({required String email}) async {
+      final db = _getDatabaseOrThrow();
+      final results = await db.query(
+        userTable,
+        limit: 1,
+        where: 'email = ?',
+        whereArgs: [email.toLowerCase()],
+      );
+      if (results.isEmpty) {
+        throw UserDoesNotExists();
+      } else {
+        return DatabaseUser.fromRow(results.first);
+      }
+    }
+
     Future<List<DatabaseUser>> fetchUser ({required String email}) async
     {
       final db = _getDatabaseOrThrow();
@@ -66,6 +83,43 @@ class NotesServices
       return result.map((row) => DatabaseUser.fromRow(row)).toList();
     }
 
+    Future<DatabaseNotes> createNote({required DatabaseUser owner}) async
+    {
+      final db = _getDatabaseOrThrow();
+
+      final dbUser = await getUser(email : owner.email);
+      if(dbUser!=owner){
+        throw CanNotFindUser();
+      }
+
+      const text ='';
+
+      final noteId = await db.insert( noteTable, 
+      {
+          userIdCol : owner.id,
+          textCol : text
+          
+      });
+      
+      final note =  DatabaseNotes(id: noteId, userId: owner.id, noteTxt: text);
+
+      return note;
+    }
+    
+    Future <void> deleteNote ({required int id}) async
+    {
+        final db = _getDatabaseOrThrow();
+
+        final deleteCount = await db.delete( noteTable,
+            where : 'id = ?',
+            whereArgs : [id]
+        );
+
+        if(deleteCount == 0){
+          throw CanNotdDeleteNote();
+        }
+    }
+    
     Future<void> open() async
     {
       if(_db!=null){
@@ -117,6 +171,8 @@ class NotesServices
           _db=null;
         }
       }
+      
+    
 
 
 }
@@ -175,3 +231,4 @@ const idCol = 'id';
 const emailCol = 'email';
 const userIdCol = 'user_id';
 const noteTxtCol = 'note_txt';
+const textCol = 'text';
