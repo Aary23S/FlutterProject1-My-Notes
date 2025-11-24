@@ -12,10 +12,12 @@ class UserAlreadyExsists implements Exception {}
 class UserDoesNotExists implements Exception {}
 class CanNotFindUser implements Exception {} 
 class CanNotdDeleteNote implements Exception {}
+class CanNotFindNote implements Exception {} 
+class NotesDoesNotExsits implements Exception{}
 class NotesServices 
 {
     Database? _db;
-    
+
     Database _getDatabaseOrThrow() 
     {
         final db=_db;
@@ -26,7 +28,6 @@ class NotesServices
           return db;
         }
     }
-    
 
     Future<void> deleteUser({required String email}) async
     {
@@ -41,6 +42,7 @@ class NotesServices
       }
       
     } 
+
     Future<DatabaseUser> createUser({required String email}) async 
     {
         final db= _getDatabaseOrThrow();
@@ -105,7 +107,7 @@ class NotesServices
 
       return note;
     }
-    
+
     Future <void> deleteNote ({required int id}) async
     {
         final db = _getDatabaseOrThrow();
@@ -118,6 +120,38 @@ class NotesServices
         if(deleteCount == 0){
           throw CanNotdDeleteNote();
         }
+    }
+
+    Future <int> deleteNotesofUser ({required int userIdCol}) async{
+      final db = _getDatabaseOrThrow();
+      return await db.delete(noteTable, where: 'userIdCol = ?' , whereArgs: [userIdCol]);
+    }
+
+    Future <int> deleteAllNotes () async{
+      final db = _getDatabaseOrThrow();
+      return await db.delete(noteTable);
+    }
+
+    Future <DatabaseNotes> fetchNote ({required int id})async{
+    final db = _getDatabaseOrThrow();
+
+    final result = await db.query(noteTable , where: 'id = ?', whereArgs: [id]);
+
+    if(result.isEmpty){
+      throw CanNotFindNote();
+    }
+
+    return DatabaseNotes.fromRow(result.first);
+  }
+
+    Future <List<DatabaseNotes>> fetchAllNotes () async {
+      final db = _getDatabaseOrThrow();
+      final result = await db.query(noteTable);
+
+      if(result.isEmpty){
+        throw NotesDoesNotExsits();
+      }
+      return result.map((row) => DatabaseNotes.fromRow(row)).toList();
     }
     
     Future<void> open() async
@@ -162,6 +196,7 @@ class NotesServices
       }
       
     }
+
     Future<void> close() async{
         final db=_db;
         if(db==null){
@@ -171,9 +206,6 @@ class NotesServices
           _db=null;
         }
       }
-      
-    
-
 
 }
 
