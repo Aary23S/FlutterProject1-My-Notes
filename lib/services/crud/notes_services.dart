@@ -3,18 +3,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart' show MissingPlatformDirectoryException, getApplicationDocumentsDirectory;
 import 'package:path/path.dart' show join;
+import 'package:registration_form/services/crud/crud_exceeptions.dart';
 
-class DatabaseIsAlreadyOpen implements Exception {}
-class UnableToGetDocumentDirectory implements Exception {}
-class DatabaseIsNotOpen implements Exception {}
-class CouldNotDeleteUser implements Exception {}
-class UserAlreadyExsists implements Exception {}
-class UserDoesNotExists implements Exception {}
-class CanNotFindUser implements Exception {} 
-class CanNotdDeleteNote implements Exception {}
-class CanNotFindNote implements Exception {} 
-class NotesDoesNotExsits implements Exception{}
-class CanNotUpdateNote implements Exception {}
 class NotesServices 
 {
     Database? _db;
