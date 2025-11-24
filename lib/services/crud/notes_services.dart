@@ -14,6 +14,7 @@ class CanNotFindUser implements Exception {}
 class CanNotdDeleteNote implements Exception {}
 class CanNotFindNote implements Exception {} 
 class NotesDoesNotExsits implements Exception{}
+class CanNotUpdateNote implements Exception {}
 class NotesServices 
 {
     Database? _db;
@@ -29,7 +30,7 @@ class NotesServices
         }
     }
 
-    Future<void> deleteUser({required String email}) async
+    Future <void> deleteUser({required String email}) async
     {
       final db = _getDatabaseOrThrow();
       final deleteCount = await db.delete(
@@ -43,7 +44,7 @@ class NotesServices
       
     } 
 
-    Future<DatabaseUser> createUser({required String email}) async 
+    Future <DatabaseUser> createUser({required String email}) async 
     {
         final db= _getDatabaseOrThrow();
         final result = await db.query(userTable,where: 'email=?', whereArgs: [email.toLowerCase()]);
@@ -59,7 +60,7 @@ class NotesServices
         );
     }
 
-    Future<DatabaseUser> getUser({required String email}) async {
+    Future <DatabaseUser> getUser({required String email}) async {
       final db = _getDatabaseOrThrow();
       final results = await db.query(
         userTable,
@@ -74,7 +75,7 @@ class NotesServices
       }
     }
 
-    Future<List<DatabaseUser>> fetchUser ({required String email}) async
+    Future <List<DatabaseUser>> fetchUser ({required String email}) async
     {
       final db = _getDatabaseOrThrow();
       final result = await db.query(userTable, limit: 1, where: 'email=?', whereArgs: [email.toLowerCase()]);
@@ -85,7 +86,7 @@ class NotesServices
       return result.map((row) => DatabaseUser.fromRow(row)).toList();
     }
 
-    Future<DatabaseNotes> createNote({required DatabaseUser owner}) async
+    Future <DatabaseNotes> createNote({required DatabaseUser owner}) async
     {
       final db = _getDatabaseOrThrow();
 
@@ -154,7 +155,22 @@ class NotesServices
       return result.map((row) => DatabaseNotes.fromRow(row)).toList();
     }
     
-    Future<void> open() async
+    Future <DatabaseNotes> updateNotes ({required DatabaseNotes note, required String text})async{
+      final db=_getDatabaseOrThrow();
+      final result=await db.update(noteTable,
+        {
+          noteTxtCol: text
+        },
+        where : 'id = ?',
+        whereArgs: [note.id]
+      );
+      if(result==0){
+        throw CanNotUpdateNote();
+      }
+      return fetchNote(id: note.id);
+    }
+    
+    Future <void> open() async
     {
       if(_db!=null){
         throw DatabaseIsAlreadyOpen;
@@ -197,7 +213,7 @@ class NotesServices
       
     }
 
-    Future<void> close() async{
+    Future <void> close() async{
         final db=_db;
         if(db==null){
           throw DatabaseIsNotOpen();
@@ -208,8 +224,6 @@ class NotesServices
       }
 
 }
-
-
 
 class DatabaseUser 
 {
