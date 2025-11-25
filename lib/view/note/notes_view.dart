@@ -6,6 +6,7 @@ import 'package:registration_form/enum/action_menu.dart';
 import 'package:registration_form/main.dart';
 import 'package:registration_form/services/auth/auth_service.dart';
 import 'package:registration_form/services/crud/notes_services.dart';
+// ignore: unused_import
 import 'package:registration_form/view/note/new_note_view.dart';
 
 class MyNotesView extends StatefulWidget {
