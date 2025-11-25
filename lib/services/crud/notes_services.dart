@@ -1,5 +1,7 @@
 // ignore_for_file: unused_import, constant_identifier_names, unused_local_variable, unused_element
 
+import 'dart:async';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart' show MissingPlatformDirectoryException, getApplicationDocumentsDirectory;
 import 'package:path/path.dart' show join;
@@ -8,6 +10,28 @@ import 'package:registration_form/services/crud/crud_exceeptions.dart';
 class NotesServices 
 {
     Database? _db;
+
+  List<DatabaseNotes> _notes=[];
+
+  final _notesStreamController = StreamController<List<DatabaseNotes>>.broadcast();
+
+  Future<void> _cacheNotes () async{
+    final allNotes = await fetchAllNotes();
+    _notes = allNotes.toList();
+    _notesStreamController.add(_notes);
+  }
+
+  Future<DatabaseUser> getOrCreateUser({required String email}) async{
+    try{
+      final user = await fetchUser(email: email);
+      return user;
+    } on CanNotFindUser {
+      final createdUser = await createUser(email: email);
+      return createdUser;
+    } catch (e){
+      rethrow;
+    }
+  }
 
     Database _getDatabaseOrThrow() 
     {
@@ -65,7 +89,7 @@ class NotesServices
       }
     }
 
-    Future <List<DatabaseUser>> fetchUser ({required String email}) async
+    Future <DatabaseUser> fetchUser ({required String email}) async
     {
       final db = _getDatabaseOrThrow();
       final result = await db.query(userTable, limit: 1, where: 'email=?', whereArgs: [email.toLowerCase()]);
@@ -73,7 +97,7 @@ class NotesServices
         throw UserDoesNotExists();
       }
       // List<Map<String, Object?>>
-      return result.map((row) => DatabaseUser.fromRow(row)).toList();
+      return DatabaseUser.fromRow(result.first);
     }
 
     Future <DatabaseNotes> createNote({required DatabaseUser owner}) async
@@ -96,6 +120,9 @@ class NotesServices
       
       final note =  DatabaseNotes(id: noteId, userId: owner.id, noteTxt: text);
 
+      _notes.add(note);
+      _notesStreamController.add(_notes);
+
       return note;
     }
 
@@ -110,7 +137,12 @@ class NotesServices
 
         if(deleteCount == 0){
           throw CanNotdDeleteNote();
+        }else{
+          _notes.removeWhere((note) => note.id==id);
+          _notesStreamController.add(_notes);
         }
+
+
     }
 
     Future <int> deleteNotesofUser ({required int userIdCol}) async{
@@ -120,7 +152,10 @@ class NotesServices
 
     Future <int> deleteAllNotes () async{
       final db = _getDatabaseOrThrow();
-      return await db.delete(noteTable);
+      final noOfDeletations = await db.delete(noteTable);
+      _notes = [];
+      _notesStreamController.add(_notes);
+      return noOfDeletations; 
     }
 
     Future <DatabaseNotes> fetchNote ({required int id})async{
@@ -132,7 +167,12 @@ class NotesServices
       throw CanNotFindNote();
     }
 
-    return DatabaseNotes.fromRow(result.first);
+    final note= DatabaseNotes.fromRow(result.first);
+    _notes.removeWhere((note)=> note.id == id);
+    _notes.add(note);
+    _notesStreamController.add(_notes);
+
+    return note; 
   }
 
     Future <List<DatabaseNotes>> fetchAllNotes () async {
@@ -156,8 +196,14 @@ class NotesServices
       );
       if(result==0){
         throw CanNotUpdateNote();
+      } else{
+        final updatedNote = await fetchNote(id: note.id);
+        _notes.removeWhere((note) => note.id==updatedNote.id );
+        _notes.add(updatedNote);
+        _notesStreamController.add(_notes); 
+        return updatedNote;
       }
-      return fetchNote(id: note.id);
+      // return fetchNote(id: note.id);
     }
     
     Future <void> open() async
@@ -196,6 +242,7 @@ class NotesServices
             ); 
           ''';
           await db.execute(CreateNoteTable);
+          await _cacheNotes();
           
       } on MissingPlatformDirectoryException {
         throw UnableToGetDocumentDirectory();
