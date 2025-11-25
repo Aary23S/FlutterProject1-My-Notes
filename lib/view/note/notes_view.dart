@@ -6,6 +6,7 @@ import 'package:registration_form/enum/action_menu.dart';
 import 'package:registration_form/main.dart';
 import 'package:registration_form/services/auth/auth_service.dart';
 import 'package:registration_form/services/crud/notes_services.dart';
+import 'package:registration_form/view/note/new_note_view.dart';
 
 class MyNotesView extends StatefulWidget {
   const MyNotesView({super.key});
@@ -40,6 +41,13 @@ class _MyNotesViewState extends State<MyNotesView> {
       appBar: AppBar(
         title: const Text("My Notes"),
         actions: [
+          IconButton
+          (
+            onPressed: (){
+              Navigator.of(context).pushNamed(newNoteRoute);
+            }, 
+            icon: const Icon(Icons.add)
+          ),
           PopupMenuButton<MenuAction>(
             onSelected: (value) async {
               switch (value) {

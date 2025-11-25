@@ -7,7 +7,8 @@ import 'package:registration_form/firebase_options.dart';
 import 'package:flutter/material.dart'; 
 import 'package:registration_form/constants/routes.dart';
 import 'package:registration_form/view/login_view.dart';
-import 'package:registration_form/view/notes_view.dart';
+import 'package:registration_form/view/note/new_note_view.dart';
+import 'package:registration_form/view/note/notes_view.dart';
 import 'package:registration_form/view/register_view.dart';
 import 'package:registration_form/view/verify_email_view.dart';
 import 'package:registration_form/services/auth/auth_service.dart';
@@ -34,8 +35,8 @@ class MyApp extends StatelessWidget
       title: 'Login-Registartion Form',
       theme: ThemeData
       (
-        primarySwatch: Colors.blue,
-        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        // primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       //here we are returning/calling the page which we want as a home screen 
       home: const HomePage(),
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget
         loginRoute: (context)=>LoginView(),
         registerRoute:(context)=>RegisterView(),
         verifyRoute:(context)=>VerifyEmailView(),
-        notesRoute:(context)=>MyNotesView()
+        notesRoute:(context)=>MyNotesView(),
+        newNoteRoute:(context)=>NewNoteView(),
       },
     );
   }
