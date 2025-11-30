@@ -88,7 +88,8 @@ class _MyNotesViewState extends State<MyNotesView> {
                 {
                     switch (snapshot.connectionState){
                       case ConnectionState.waiting:
-                        return Text("Waiting for the notes to reload!!!");
+                      case ConnectionState.active:
+                        return const Text("Waiting for the notes to reload!!!");
                       default :
                         return CircularProgressIndicator();
                     }  
